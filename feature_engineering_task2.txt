@@ -1,0 +1,36 @@
+-- 1 We Create first  a mapping table so that were not confuse which column to categorize
+
+CREATE TABLE bldgtype_mapping (
+    bldgtype TEXT PRIMARY KEY,
+    bldgtype_id SERIAL
+);
+
+--2.  Populate the mapping table to the backup csv files
+
+INSERT INTO bldgtype_mapping (bldgtype)
+SELECT DISTINCT bldgtype
+FROM property_sales_task2;
+
+--3. Add the  label encoded column to the main table
+
+ALTER TABLE property_sales_task2
+ADD COLUMN bldgtype_id INT;
+
+-- 4. Update the label  encoded values using the mapping table
+
+UPDATE property_sales_task2 pst2
+SET bldgtype_id = btm.bldgtype_id
+FROM bldgtype_mapping btm
+WHERE pst2.bldgtype = btm.bldgtype;
+
+--5. Lastly verify  the updated table if we do the required tasks by  categorizing it or represent that by number
+--denisignate ko po yung building type as number since 5 category sya 1,2,3,4,5 respectively
+--masakit na po ilong ko kakaenglish huhu
+
+SELECT id,bldgtype,bldgtype_id
+FROM property_sales_task2
+GROUP BY 
+	id,
+	bldgtype,
+	bldgtype_id
+;

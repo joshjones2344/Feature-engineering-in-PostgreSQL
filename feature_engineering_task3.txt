@@ -1,0 +1,15 @@
+--Perform Mean encoding on one or more Categorical Variables in the dataset (hint: you may want to use OVER() and PARTITION() commands)
+-- as shown to our csv file we easily distinguist that bldgtype column and saleprice column give monotonic relatioship as categories and target 
+--so we used it on this  for task3 
+--since we dont go to categorize all column then we can use PARTITION BY clause
+--use this script
+
+SELECT
+    id,
+    bldgtype,
+    saleprice,
+    AVG(saleprice) OVER (PARTITION BY bldgtype) AS mean_saleprice
+FROM
+    property_sales;
+
+--note that we can use other category variable to its accepted relation to other  numeric variables

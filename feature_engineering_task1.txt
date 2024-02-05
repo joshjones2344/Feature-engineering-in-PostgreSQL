@@ -1,0 +1,22 @@
+--Task 01 Perform One-Hot Encoding on the variable on one or more Categorical Variables in the
+--dataset
+--i want to perform 1 variable only on this task lotshape namely
+
+CREATE TABLE LotShape_encoded AS
+SELECT *,
+       CASE WHEN LotShape = 'Regular' THEN 1 ELSE 0 END AS RegularLotshape_encoded,
+       CASE WHEN LotShape = 'Slightly irregular' THEN 1 ELSE 0 END AS SlightlyIrregular_encoded,
+       CASE WHEN LotShape = 'Moderately Irregular' THEN 1 ELSE 0 END AS ModeratelyIrregular_encoded,
+	   CASE WHEN LotShape = 'Irregular' THEN 1 ELSE 0 END AS Irregular_encoded
+FROM property_sales;
+
+-- you can drop some unneccessary column so that we can determine and represent the generated binary on the target variable
+--sample we remove lotshape Column
+
+ALTER TABLE lotshape_encoded
+DROP COLUMN LotShape;
+
+--if you like to run the query on that specific table use to check the binary on that target variable 
+--you find at the last column cause i dont use GROUP(BY) clause:
+
+SELECT * FROM lotshape_encoded

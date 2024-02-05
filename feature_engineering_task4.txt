@@ -1,0 +1,77 @@
+--mean Normalization
+--As i observed the price range in salesprice seems acceptable to do mean normalization without outliers
+--let see if value range to -1 to 1 and centering to 0
+--some rows in lotfrontage has emptied data so i set it to 0 maybe there is no frontage on that property 
+
+UPDATE property_sales
+SET lotfrontage = COALESCE(lotfrontage,0);
+select * from property_sales
+-- now we can start to evaluate our mean normalization for every numeric variables
+-- using query first we dont want update clause because it can ruin our task hihi
+
+SELECT 		id,
+		mssubclass,
+		bldgtype,
+		housestyle,
+		lotfrontage,
+		lotarea,
+		garagearea,
+		grlivarea,
+		totalbsmtsf,
+		saleprice,
+		(lotfrontage - AVG (lotfrontage) OVER()) / (MAX(lotfrontage) OVER() - MIN(lotfrontage) OVER()) AS lotfrontage_meannorm,
+		(lotarea - AVG (lotarea) OVER()) / (MAX(lotarea) OVER() - MIN(lotarea) OVER()) AS lotarea_meannorm,
+		(garagearea - AVG (garagearea) OVER()) / (MAX(garagearea) OVER() - MIN(garagearea) OVER()) AS garagearea_meannorm,
+		(grlivarea - AVG (grlivarea) OVER()) / (MAX(grlivarea) OVER() - MIN(grlivarea) OVER()) AS grlivarea_meannorm,
+		(totalbsmtsf - AVG (totalbsmtsf) OVER()) / (MAX(totalbsmtsf) OVER() - MIN(totalbsmtsf) OVER()) AS totalbsmtsf_meannorm,
+		(saleprice - AVG (saleprice) OVER()) /  (MAX(saleprice) OVER() - MIN(saleprice) OVER())AS saleprice_meannorm
+FROM property_sales;
+--we confirm that there is no outliers so we can now proceed to add colunm on all numeric variables
+-- we add now new columns to the table 
+
+ALTER TABLE property_sales
+ADD COLUMN lotfrontage_meannorm NUMERIC,
+ADD COLUMN lotarea_meannorm NUMERIC,
+ADD COLUMN garagearea_meannorm NUMERIC,
+ADD COLUMN grlivarea_meannorm NUMERIC,
+ADD COLUMN totalbsmtsf_meannorm NUMERIC,
+ADD COLUMN saleprice_meannorm NUMERIC;
+
+---lastly we use update clause statement in the final mean normalization values in all numeric variables
+
+WITH mean_norm_values AS (
+    SELECT
+        mssubclass,
+        bldgtype,
+        housestyle,
+        lotfrontage,
+        lotarea,
+        garagearea,
+        grlivarea,
+        totalbsmtsf,
+        saleprice,
+        (lotfrontage - AVG(lotfrontage) OVER()) / (MAX(lotfrontage) OVER() - MIN(lotfrontage) OVER()) AS lotfrontage_meannorm,
+        (lotarea - AVG(lotarea) OVER()) / (MAX(lotarea) OVER() - MIN(lotarea) OVER()) AS lotarea_meannorm,
+        (garagearea - AVG(garagearea) OVER()) / (MAX(garagearea) OVER() - MIN(garagearea) OVER()) AS garagearea_meannorm,
+        (grlivarea - AVG(grlivarea) OVER()) / (MAX(grlivarea) OVER() - MIN(grlivarea) OVER()) AS grlivarea_meannorm,
+        (totalbsmtsf - AVG(totalbsmtsf) OVER()) / (MAX(totalbsmtsf) OVER() - MIN(totalbsmtsf) OVER()) AS totalbsmtsf_meannorm,
+        (saleprice - AVG(saleprice) OVER()) / (MAX(saleprice) OVER() - MIN(saleprice) OVER()) AS saleprice_meannorm
+    FROM property_sales
+)
+UPDATE property_sales AS ps
+SET
+    lotfrontage_meannorm = mnv.lotfrontage_meannorm,
+    lotarea_meannorm = mnv.lotarea_meannorm,
+    garagearea_meannorm = mnv.garagearea_meannorm,
+    grlivarea_meannorm = mnv.grlivarea_meannorm,
+    totalbsmtsf_meannorm = mnv.totalbsmtsf_meannorm,
+    saleprice_meannorm = mnv.saleprice_meannorm
+FROM mean_norm_values AS mnv
+WHERE
+    ps.mssubclass = mnv.mssubclass AND
+    ps.bldgtype = mnv.bldgtype AND
+    ps.housestyle = mnv.housestyle;
+	
+--to check run Query if  the added colomn filled with values
+
+SELECT * FROM property_sales

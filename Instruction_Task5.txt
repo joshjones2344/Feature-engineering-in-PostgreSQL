@@ -1,0 +1,33 @@
+-- make your table first to perform the task 5 using this Script,
+-- need to create backup csv so that we dont the degrade the intergrity og data or alter the data
+-- copy and paste folder to same folder incase of data change
+
+CREATE TABLE property_sales_task2
+(
+	Id SERIAL,
+	MSSubClass varchar(255),
+	LotShape varchar(255),
+	LandContour varchar(255),
+	LandSlope varchar(255),
+	BldgType varchar(255),
+	HouseStyle varchar(255),
+	OverallQual varchar(255),
+	OverallCond varchar(255),
+	LotFrontage INT,
+	LotArea INT,
+	GarageArea INT,
+	GrLivArea INT,
+	TotalBsmtSF INT,
+	SalePrice INT
+);
+
+-- then copy the csv file on the table created using this script
+--NOTE that use my uploaded csv for copying it.
+--if you encounter Exemption/error for loading 
+--right-click the file GO TO Security then click EDIT and  click ADD 
+--after that type (Everyone )without parenthesis on below caption 'Enter the object name to select' check read&execute ,read only on a permission option ,click OK then APPLY then OK --and close you can now import the file to your database.
+--please see sample coding below
+
+COPY property_sales_task2
+FROM 'C:\Users\Admin\Downloads\property_sales_backup_dataset_task02.csv' DELIMITER ',' CSV HEADER
+;

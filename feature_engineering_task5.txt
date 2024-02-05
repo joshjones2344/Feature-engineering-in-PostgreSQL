@@ -1,0 +1,70 @@
+--Standardization
+-- x' = (x-mean(x))/standard deviation
+--for this task5 i use STDDEV_SAMP() on standard deviation
+--let see if value  variance are 0 and 1  
+--run the query first and evaluate standardization on every numeric values 
+
+SELECT		id,
+		mssubclass,
+		bldgtype,
+		housestyle,
+		lotfrontage,
+		lotarea,
+		garagearea,
+		grlivarea,
+		totalbsmtsf,
+		saleprice,
+		(lotfrontage - AVG (lotfrontage) OVER()) / STDDEV_SAMP(lotfrontage) OVER() AS lotfrontage_std,
+		(lotarea - AVG (lotarea) OVER()) / STDDEV_SAMP(lotarea) OVER() AS lotarea_std,
+		(garagearea - AVG (garagearea) OVER()) / STDDEV_SAMP(garagearea) OVER() AS garagearea_std,
+		(grlivarea - AVG (grlivarea) OVER()) / STDDEV_SAMP(grlivarea) OVER() AS grlivarea_std,
+		(totalbsmtsf - AVG (totalbsmtsf) OVER()) / STDDEV_SAMP(totalbsmtsf) OVER() AS totalbsmtsf_std,
+		(saleprice - AVG (saleprice) OVER()) /  STDDEV_SAMP(saleprice) OVER() AS saleprice_std
+FROM property_sales;
+
+--we confirm that there is no outliers so we can now proceed to add colunm on all numeric variables
+-- we add now new columns to the table
+ALTER TABLE property_sales
+ADD COLUMN lotfrontage_std NUMERIC,
+ADD COLUMN lotarea_std NUMERIC,
+ADD COLUMN garagearea_std NUMERIC,
+ADD COLUMN grlivarea_std NUMERIC,
+ADD COLUMN totalbsmtsf_std NUMERIC,
+ADD COLUMN saleprice_std NUMERIC;
+
+---lastly we use update clause statement in the final standardization values in all numeric variables
+--- Calculate averages and standard deviations using a CTE
+
+WITH stats AS (
+    SELECT
+        AVG(lotfrontage) OVER() AS lotfrontage_avg,
+        STDDEV_SAMP(lotfrontage) OVER() AS lotfrontage_stddev,
+        AVG(lotarea) OVER() AS lotarea_avg,
+        STDDEV_SAMP(lotarea) OVER() AS lotarea_stddev,
+        AVG(garagearea) OVER() AS garagearea_avg,
+        STDDEV_SAMP(garagearea) OVER() AS garagearea_stddev,
+        AVG(grlivarea) OVER() AS grlivarea_avg,
+        STDDEV_SAMP(grlivarea) OVER() AS grlivarea_stddev,
+        AVG(totalbsmtsf) OVER() AS totalbsmtsf_avg,
+        STDDEV_SAMP(totalbsmtsf) OVER() AS totalbsmtsf_stddev,
+        AVG(saleprice) OVER() AS saleprice_avg,
+        STDDEV_SAMP(saleprice) OVER() AS saleprice_stddev
+    FROM property_sales
+)
+-- Update the table with computed standardized values
+UPDATE property_sales AS ps
+SET
+    lotfrontage_std = (ps.lotfrontage - stats.lotfrontage_avg) / stats.lotfrontage_stddev,
+    lotarea_std = (ps.lotarea - stats.lotarea_avg) / stats.lotarea_stddev,
+    garagearea_std = (ps.garagearea - stats.garagearea_avg) / stats.garagearea_stddev,
+    grlivarea_std = (ps.grlivarea - stats.grlivarea_avg) / stats.grlivarea_stddev,
+    totalbsmtsf_std = (ps.totalbsmtsf - stats.totalbsmtsf_avg) / stats.totalbsmtsf_stddev,
+    saleprice_std = (ps.saleprice - stats.saleprice_avg) / stats.saleprice_stddev
+FROM stats
+
+--it seems coding script work properly 
+--lets check if required column filled with values
+
+select * from property_sales
+
+--there you go , we succesfully filled the values
